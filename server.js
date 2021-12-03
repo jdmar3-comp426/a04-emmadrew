@@ -6,15 +6,15 @@ var db = require("./database.js")
 // Require md5 MODULE
 var md5 = require("md5")
 // Make Express use its own built-in body parser
-var bodyParser = require("body-parser");
+// var bodyParser = require("body-parser");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Set server port
-HTTP_PORT = 5000;
+var HTTP_PORT = 5000;
 
 // Start server
-app.listen(HTTP_PORT, () => {
+const server = app.listen(HTTP_PORT, () => {
     console.log("Server running on port %PORT%".replace("%PORT%",HTTP_PORT))
 });
 // READ (HTTP method GET) at root endpoint /app/
@@ -39,7 +39,7 @@ app.get("/app/users", (req, res) => {
 
 // READ a single user (HTTP method GET) at endpoint /app/user/:id
 app.get("/app/user/:id", (req, res) => {
-	const stmt = db.prepare("SELECT * FROM userinfo WHERE id = 2").all();
+	const stmt = db.prepare("SELECT * FROM userinfo WHERE id = ?").get(req.params.id);
 	res.status(200).json(stmt);
 });
 
@@ -59,7 +59,13 @@ app.delete("/app/delete/user/:id", (req, res) => {
 
 // Default response for any other request
 app.use(function(req, res){
-	res.json({"message":"Your API is working!"});
+	res.json({"message":"Endpoint not found. (404)"});
     res.status(404);
 });
 
+// Tell STDOUT that the server is stopped
+process.on('SIGTERM', () => {
+	server.close(() => {
+		console.log('Server stopped.')
+	})
+});
