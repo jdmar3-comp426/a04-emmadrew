@@ -39,6 +39,6 @@ app.get("/app/users", (req, res) => {
 
 // Default response for any other request
 app.use(function(req, res){
-	res.json({"message":"Endpoint not found. (404)"});
+	res.json({"message":"Your API is working!"});
     res.status(404);
 });
