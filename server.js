@@ -6,6 +6,7 @@ var db = require("./database.js")
 // Require md5 MODULE
 var md5 = require("md5")
 // Make Express use its own built-in body parser
+var bodyParser = require("body-parser");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -13,8 +14,8 @@ app.use(express.json());
 HTTP_PORT = 5000;
 
 // Start server
-const server = app.listen(HTTP_PORT, () => {
-    console.log("Server running on port %PORT%".replace("%PORT%",5000))
+app.listen(HTTP_PORT, () => {
+    console.log("Server running on port %PORT%".replace("%PORT%",HTTP_PORT))
 });
 // READ (HTTP method GET) at root endpoint /app/
 app.get("/app/", (req, res, next) => {
@@ -50,6 +51,11 @@ app.patch("/app/update/user/:id", (req, res) => {
 });
 
 // DELETE a single user (HTTP method DELETE) at endpoint /app/delete/user/:id
+app.delete("/app/delete/user/:id", (req, res) => {
+	const stmt = db.prepare("DELETE FROM userid WHERE id = ?");
+	const info = stmt.run(req.params.id);
+	res.status(200).json({"message ": info.changes + "record deleted: ID " + req.params.id + "(200)"});
+});
 
 // Default response for any other request
 app.use(function(req, res){
@@ -57,9 +63,3 @@ app.use(function(req, res){
     res.status(404);
 });
 
-// Tell STDOUT that the server is stopped
-process.on('SIGTERM', () => {
-	server.close(() => {
-		console.log('Server stopped.');
-	});
-});
